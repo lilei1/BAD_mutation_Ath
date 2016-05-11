@@ -1,9 +1,10 @@
 #!/usr/bin/perl
 ##by Li Lei, 20160502, in St.Paul;
 #this is to do filtering to see if the variants are deleterious variants. Firstly based on the criteris:
-#SeqCount>10;maskedConstraint>1;maskedP-value< 0.05/number of tested codon.
-#secondly we also need to exclude variants where the derived state in Arabidopsis was present in other species
-#usage:
+#SeqCount>10;maskedConstraint<1;maskedP-value< 0.05/number of tested codon.
+#secondly we also need to exclude variants where the derived state in barley was present in other species
+#this program only takes care of the first filtering
+#usage: ./filtering_prediction.pl /home/morrellp/llei/Deleterious_mutation_project/LTR_BAD_mutation/A_thaliana_BAD_Mutation/file_list/both_manual_subs_file.list  /home/morrellp/llei/Deleterious_mutation_project/LTR_BAD_mutation/A_thaliana_BAD_Mutation/file_list/prediction.extract.list
 use strict;
 use warnings;
 use Data::Dumper;
@@ -63,14 +64,19 @@ sub dele_filtering{
     open(FILE, $file) or die "Could not open $file";
     open(OUT,  ">$path/$outfile");
     my $header=<FILE>;
+       chomp $header;
+    print OUT "$header\tStatus\n";
     foreach my $row (<FILE>){
         chomp $row;
         #print  OUT "$row\n";
         my @rtemp = split(/\t/,$row);
-        my $adjust_P = sprintf("%.25f", $rtemp[17]);
-        my $adjust_constraint = sprintf("%.25f", $rtemp[16]);
-        if ($rtemp[6] > 10 && $adjust_constraint > 1 && $adjust_P < $threshold){
-             print OUT "$row\n";
+        my $adjust_P = sprintf("%.25f", $rtemp[10]);
+        my $adjust_constraint = sprintf("%.25f", $rtemp[9]);
+        if ($rtemp[6] > 10 && $adjust_constraint < 1 && $adjust_P < $threshold){
+             print OUT "$row\tDeleterious\n";
+        }
+        else{
+             print OUT "$row\tTolerant\n";
         }
     }
     close (FILE);
